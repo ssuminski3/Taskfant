@@ -18,7 +18,7 @@ const AddThoughtComponent = ({ onAddThought }) => {
         onChangeText={setThought}
         placeholderTextColor="#a0a0a0"
       />
-      <TouchableOpacity style={styles.addButtonAdd} onPress={() => { onAddThought(thought) }}>
+      <TouchableOpacity style={styles.addButtonAdd} onPress={() => { onAddThought(thought); setThought('') }}>
         <Icon name='plus' color={'rgb(255, 235, 59)'} size={20} />
       </TouchableOpacity>
     </View>

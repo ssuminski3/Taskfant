@@ -18,7 +18,7 @@ const AddTaskComponent = ({ onAddTask, }) => {
                 onChangeText={setTask}
                 placeholderTextColor="#a0a0a0"
             />
-            <TouchableOpacity style={styles.addButtonAdd} onPress={() => onAddTask(task)}>
+            <TouchableOpacity style={styles.addButtonAdd} onPress={() => {onAddTask(task); setTask('')}}>
                 <Icon name='plus' color={'rgb(255, 235, 59)'} size={20} />
             </TouchableOpacity>
         </View>
