@@ -1,0 +1,85 @@
+import React, { useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import CalendarPage from './src/pages/CalendarPage/CalendarPage';
+import StartingPage from './src/pages/StartingPage/StartingPage';
+import ToDoPage from './src/pages/ToDoPage/ToDoPage';
+import ShopPage from './src/pages/ShopPage/ShopPage';
+import SettingsPage from './src/pages/SettingsPage/SettingsPage';
+import CreateToDoPage from './src/pages/ToDoPage/CreateToDoPage';
+import Icon from 'react-native-vector-icons/FontAwesome'; // Choose your icon library
+import { createStackNavigator } from '@react-navigation/stack';
+import DayPage from './src/pages/DayNotes/Day';
+
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+function MainTabNavigator() {
+  return (
+    <Tab.Navigator
+      initialRouteName="Home"
+      screenOptions={({ route }) => ({
+        headerStyle: {
+          backgroundColor: '#000', // Background color of the top bar
+        },
+        headerTintColor: '#fff', // Color of the header title and buttons
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          switch (route.name) {
+            case 'Challenges': iconName = 'rocket'; break;
+            case 'Home': iconName = 'home'; break;
+            case 'Goals': iconName = 'check-square'; break;
+            case 'Settings': iconName = 'cog'; break;
+            case 'Calendar': iconName = 'calendar'; break;
+            default: iconName = 'circle'; break;
+          }
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: 'rgb(255, 235, 59)',
+        tabBarInactiveTintColor: 'gray',
+        tabBarStyle: {
+          backgroundColor: '#000', // Background color of the bottom tab bar
+        },
+      })}
+    >
+      <Tab.Screen name="Calendar" component={CalendarPage} />
+      <Tab.Screen name="Challenges" component={ShopPage} />
+      <Tab.Screen name="Home" component={StartingPage} />
+      <Tab.Screen name="Goals" component={ToDoPage} />
+      <Tab.Screen name="Settings" component={SettingsPage} />
+    </Tab.Navigator>
+  );
+}
+function MainStackNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+      <Stack.Screen
+        name="CreateToDoPage"
+        component={CreateToDoPage}
+        options={({ navigation }) => ({
+          title: 'Create To Do', // Set the title of your choice
+        })}
+      />
+      <Stack.Screen
+        name="DayPage"
+        component={DayPage}
+        options={({ navigation }) => ({
+          title: 'DayPage'
+        })}
+      />
+    </Stack.Navigator>
+  );
+}
+
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <MainStackNavigator />
+    </NavigationContainer>
+  );
+}
