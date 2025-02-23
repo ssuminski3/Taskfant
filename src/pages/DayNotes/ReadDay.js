@@ -61,7 +61,7 @@ const ReadDay = (props) => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.planLabel}>Plan for {date}</Text>
-      <Text style={styles.text} numberOfLines={3}>{plan}</Text>
+      <Text style={styles.text}>{plan}</Text>
 
       <Text style={styles.planLabel}>Note for {date}</Text>
       <Text style={styles.containerText}>{note}</Text>

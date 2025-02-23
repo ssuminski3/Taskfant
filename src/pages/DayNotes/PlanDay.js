@@ -81,11 +81,10 @@ const PlanDay = (props) => {
             <TextInput
                 style={styles.textInput}
                 placeholder="Here write your plan"
-                placeholderTextColor="#a0a0a0"// Assuming you want a placeholder text color
+                placeholderTextColor="#a0a0a0"
                 value={task}
                 onChangeText={setTask}
                 multiline
-                numberOfLines={3} // This ensures the TextInput starts with a height for 3 lines
             />
             <AddTaskComponent onAddTask={async (newTask) => await handleTask(newTask)} />
             {/* Placeholder for your <Component/> */}
