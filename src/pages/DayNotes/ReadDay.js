@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+    padding: 10,
   },
   componentPlaceholder: {
     width: '100%',
@@ -100,6 +101,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'grey',
     borderRadius: 20,
+    padding: 5,
   },
   text: {
     borderWidth: 1,
