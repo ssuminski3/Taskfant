@@ -47,13 +47,10 @@ const StartingPage = () => {
     if (!isTodayOrYesterday(storedTimestamp)) {
       // User missed a day, reset streak to 0
       setStreak(0);
-      console.log("Zero")
       setUserStreak(0)
     } 
     else{
-      console.log("Hura")
     }
-    console.log(data.streak)
     setStreak(data.streak)
   } 
 
@@ -91,9 +88,7 @@ const StartingPage = () => {
     const currentDate = new Date();
     currentDate.setHours(currentDate.getHours() + 1);
 
-    console.log(currentDate)
     const formattedDate = currentDate.toISOString().split('T')[0]; // Extract YYYY-MM-DD
-    console.log("Hi its nice: " + formattedDate)
     navigation.navigate('DayPage', { date: formattedDate, onSave: handleWrite });
   };
 

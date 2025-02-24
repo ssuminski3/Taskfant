@@ -59,24 +59,26 @@ const ReadDay = (props) => {
     fetchAndReloadTasks();
   }
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.planLabel}>Plan for {date}</Text>
-      <Text style={styles.text}>{plan}</Text>
+    <ScrollView>
+      <View  style={styles.container}>
+        <Text style={styles.planLabel}>Plan for {date}</Text>
+        <Text style={styles.text}>{plan}</Text>
 
-      <Text style={styles.planLabel}>Note for {date}</Text>
-      <Text style={styles.containerText}>{note}</Text>
-      <Text style={styles.planLabel}>Rate:</Text>
-      <View style={{ alignItems: 'center' }}>
-        <Text style={{ textAlign: 'center', color: day ? interpolateColor(rate) : 'white', fontSize: 40, paddingBottom: 10 }}>{rate}</Text>
+        <Text style={styles.planLabel}>Note for {date}</Text>
+        <Text style={styles.containerText}>{note}</Text>
+        <Text style={styles.planLabel}>Rate:</Text>
+        <View style={{ alignItems: 'center' }}>
+          <Text style={{ textAlign: 'center', color: day ? interpolateColor(rate) : 'white', fontSize: 40, paddingBottom: 10 }}>{rate}</Text>
+        </View>
+        <Text style={styles.planLabel}>Done for {date}</Text>
+        <ScrollView style={styles.componentPlaceholder}>
+          <DoneTaskHabits tab={doneTasks} Com={DoneTask} date={date} />
+        </ScrollView>
+        <Text style={styles.planLabel}>Thoughts for {date}</Text>
+        <ScrollView style={styles.componentPlaceholder}>
+          <ThoughtList thoughts={thought} date={date} onDelete={async (d, a) => onThoughtDelete(d, a)}/>
+        </ScrollView>
       </View>
-      <Text style={styles.planLabel}>Done for {date}</Text>
-      <ScrollView style={styles.componentPlaceholder}>
-        <DoneTaskHabits tab={doneTasks} Com={DoneTask} date={date} />
-      </ScrollView>
-      <Text style={styles.planLabel}>Thoughts for {date}</Text>
-      <ScrollView style={styles.componentPlaceholder}>
-        <ThoughtList thoughts={thought} date={date} onDelete={async (d, a) => onThoughtDelete(d, a)}/>
-      </ScrollView>
     </ScrollView>
   );
 };
@@ -97,7 +99,7 @@ const styles = StyleSheet.create({
   },
   componentPlaceholder: {
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 25,
     borderWidth: 1,
     borderColor: 'grey',
     borderRadius: 20,

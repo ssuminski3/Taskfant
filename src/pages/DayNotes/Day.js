@@ -100,13 +100,11 @@ export default function DayPage({ route }) {
         for (let i = 7; i >= 1; i--) {
           updatedDates.push(addDaysToDate(dat[0], -i));
         }
-        console.log("Updated: "+updatedDates)
         updatedDates.push(...dat);
         setDat(updatedDates);
         setCurrentIndex(index+7); // Adjust the current index accordingly
       }
 
-      console.log(dat);
     };
 
 

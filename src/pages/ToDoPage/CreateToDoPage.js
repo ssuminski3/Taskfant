@@ -27,8 +27,6 @@ const CreateToDoPage = ({ route, navigation }) => {
   const [showDatePicker, setShowDatePicker] = useState(false); // New state for visibility
   const [showDatePicker2, setShowDatePicker2] = useState(false); // New state for visibility
   const [successMessage, setSuccessMessage] = useState('');
-  console.log('showDatePicker:', showDatePicker);
-  console.log('showDatePicker2:', showDatePicker2);
 
   const saveToDo = async () => {
     if (title.trim() === '') {
@@ -53,44 +51,51 @@ const CreateToDoPage = ({ route, navigation }) => {
     // Reset form or perform other actions after save
   };
 
+  const handleDateChange = (event, selectedDate) => {
+    if (event?.type === 'dismissed') {
+      setShowDatePicker(false);
+      return;
+    }
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setDate(selectedDate);
+      const formattedText = formatDateTimeText(selectedDate, time, true);
+      setText(formattedText);
+    }
+  };
+
   const handleTimeChange = (event, selectedTime) => {
+    if (event?.type === 'dismissed') {
+      setShowDatePicker2(false);
+      return;
+    }
     setShowDatePicker2(false);
     if (selectedTime) {
-      // Update the time state
       setTime(selectedTime);
-
-      // Update the text using the selected time immediately
       const formattedText = formatDateTimeText(date, selectedTime, false);
       setText(formattedText);
     }
   };
 
-  const formatDateTimeText = (selectedDate, selectedTime, t=true) => {
+
+  const formatDateTimeText = (selectedDate, selectedTime, t = true) => {
     const day = formatNumber(selectedDate.getDate());
     const month = formatNumber(selectedDate.getMonth() + 1);
     const year = selectedDate.getFullYear();
     const hours = formatNumber(selectedTime.getHours());
     const minutes = formatNumber(selectedTime.getMinutes());
 
-    return t?`${day}-${month}-${year} ${hours}:${minutes}`:`${hours}:${minutes}`;
-  };
-  const handleDateChange = (event, selectedDate) => {
-    // Your logic for handling the date change
-    console.log("Date: " + selectedDate)
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setDate(selectedDate);
-      // Any other logic you want to include
-      const formattedText = formatDateTimeText(date, selectedDate);
-      setText(formattedText);
-    }
+    return t ? `${day}-${month}-${year} ${hours}:${minutes}` : `${hours}:${minutes}`;
   };
 
-  /*useEffect(() => {
-    const formattedText = formatDateTimeText(date, time, false);
-    setText(formattedText);
-  }, [date, time]);*/
-  // Function to handle toggling days for habits
+  useEffect(() => {
+    return () => {
+      setShowDatePicker(false);
+      setShowDatePicker2(false);
+    };
+  }, []);
+
+
   const toggleDay = (day) => {
     setDays({ ...days, [day]: !days[day] });
   };
@@ -98,10 +103,15 @@ const CreateToDoPage = ({ route, navigation }) => {
     setShowDatePicker(!showDatePicker);
   };
   const [isTask, setIsTask] = useState(true); // true for 'task', false for 'habit'
+  
   const toggleSwitch = () => {
-    setIsTask(previousState => !previousState);
-    setType(isTask ? 'habit' : 'task');
-    setText(!isTask ? 'Select Date' : "Select Time")
+    setIsTask(prev => {
+      const newValue = !prev;
+      setType(newValue ? 'task' : 'habit');
+      setText(newValue ? 'Select Date' : 'Select Time');
+      return newValue;
+    });
+
   };
   return (
     <View style={styles.container}>

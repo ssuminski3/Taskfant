@@ -8,7 +8,6 @@ const Task = ({ text, date, on }) => {
     const [showIcon, setShowIcon] = useState(false);
     const onDelete = async () => {
         await deleteTask(text, date)
-        console.log("Nie wierze, że niedziała: " + text)
         on();
     };
     useEffect(() => {
@@ -126,7 +125,6 @@ const Habit = ({ text, date, streak, done, on, days, last }) => {
                 resetStreak(text)
             }
         }
-        console.log("Should be done today:", shouldBeDoneToday);
     }
     doned()
     return (
@@ -158,34 +156,59 @@ const formatDate = (inputDate) => {
 
 
 const TaskHabitsList = ({ tab, Com, date, on, type = false }) => {
-    // Example function where you want to check the condition
-    const checkIfDayMatches = (item, date) => {
-        const dayIndex = (new Date(date)).getDay();
-        return item.days[getDayName(dayIndex)] === true;
-    };
 
-    // Helper function to get the day name from the index (0 is Sunday, 1 is Monday, etc.)
     const getDayName = (dayIndex) => {
         const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         return daysOfWeek[dayIndex];
     };
 
+    const checkIfDayMatches = (item, date) => {
+        const dayIndex = new Date(date).getDay();
+        return item.days[getDayName(dayIndex)] === true;
+    };
+
+    const normalizeDate = (d) => {
+        const normalized = new Date(d);
+        normalized.setHours(0, 0, 0, 0);
+        return normalized.getTime();
+    };
+    console.log("TAskli, które dostałem: ", tab)
+
     return (
         <View>
             <View>
                 {tab.map((item, index) => {
-                    if (type && checkIfDayMatches(item, date))
-                        return <Com key={index} text={item.text} date={"For Today"} streak={item.streak} done={item.done} days={item.days} last={item.lastDate} on={on} />
-
-                    else if (new Date(item.date).setHours(0, 0, 0, 0) === new Date(date).setHours(0, 0, 0, 0)) {
-                        { (item.date === date) }
-                        return <Com key={index} text={item.text} date={item.date} on={on} />
+                    if (type && checkIfDayMatches(item, date)) {
+                        return (
+                            <Com
+                                key={index}
+                                text={item.text}
+                                date={"For Today"}
+                                streak={item.streak}
+                                done={item.done}
+                                days={item.days}
+                                last={item.lastDate}
+                                on={on}
+                            />
+                        );
+                    } 
+                    else if (normalizeDate(item.date) === normalizeDate(date)) {
+                        return (
+                            <Com
+                                key={index}
+                                text={item.text}
+                                date={item.date}
+                                on={on}
+                            />
+                        );
                     }
+                    return null; // Explicitly return null for unmatched items
                 })}
             </View>
         </View>
     );
 };
+
 
 const DoneTaskHabits = ({ tab, Com, on, date, type = false }) => {
 

@@ -129,7 +129,6 @@ const createTask = async (text, date) => {
 
     // Save the updated array to AsyncStorage
     await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
-    console.log("Created" + text)
   } catch (error) {
     console.error('Error creating task:', error);
   }
@@ -139,13 +138,11 @@ const deleteTask = async (text, date) => {
   try {
     // Retrieve existing tasks from AsyncStorage
     const tasks = await getTasks()
-    console.log("deleted date: " + date)
 
     // Remove the task with matching text and date
     const updatedTasks = tasks.filter((task) => !(task.text === text && task.date === date));
     // Save the updated array to AsyncStorage
     await AsyncStorage.setItem('tasks', JSON.stringify(updatedTasks));
-    console.log("Deleted:" + text)
   } catch (error) {
     console.error('Error deleting task:', error);
   }
@@ -183,7 +180,6 @@ const createDoneTask = async (text, date) => {
 
     // Save the updated array to AsyncStorage
     await AsyncStorage.setItem('donetasks', JSON.stringify(tasks));
-    console.log("Done: " + text)
   } catch (error) {
     console.error('Error creating task:', error);
   }
@@ -265,7 +261,6 @@ const setDone = async (text) => {
     const updatedHabits = existingHabits.map(habit =>
       habit.text === text ? { ...habit, done: !habit.done, lastDate: new Date(), streak: habit.done ? habit.streak - 1 : habit.streak + 1 } : habit
     );
-    console.log("Habit: " + JSON.stringify(updatedHabits))
     await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updatedHabits));
   } catch (error) {
     console.error('Error updating done status:', error);
@@ -279,7 +274,6 @@ const setUndone = async (text) => {
     const updatedHabits = existingHabits.map(habit =>
       habit.text === text ? { ...habit, done: false } : habit
     );
-    console.log("Habit: " + JSON.stringify(updatedHabits))
     await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updatedHabits));
   } catch (error) {
     console.error('Error updating done status:', error);
@@ -293,7 +287,6 @@ const resetStreak = async (text) => {
     const updatedHabits = existingHabits.map(habit =>
       habit.text === text ? { ...habit, streak: 0, done: false } : habit
     );
-    console.log("Habit: " + JSON.stringify(updatedHabits))
     await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updatedHabits));
   } catch (error) {
     console.error('Error updating done status:', error);
@@ -368,11 +361,9 @@ const setUserStreak = async (action) => {
     } else if (action === 1) {
       data.streak += 1;
       data.lastDate = new Date();
-      console.log("Streak: " + data.streak)
     }
     // Save the updated data back to storage
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    console.log("Stored: " + JSON.stringify(data))
   } catch (error) {
     console.error('Error setting streak:', error);
   }
@@ -381,7 +372,6 @@ const setUserStreak = async (action) => {
 const getStoredData = async () => {
   try {
     const storedData = await AsyncStorage.getItem(STORAGE_KEY);
-    console.log("Stored: " + storedData)
     return storedData ? JSON.parse(storedData) : { streak: 0, lastDate: null };
   } catch (error) {
     console.error('Error getting stored data:', error);

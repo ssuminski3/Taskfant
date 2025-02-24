@@ -32,7 +32,6 @@ class NotificationManager {
 
   // Schedule a notification by date and hour
   async scheduleNotificationDateAndHour(date, task) {
-    console.log("Scheduled for: "+date)
     Notifications.scheduleNotificationAsync({
       content: {
         title: task,
@@ -50,7 +49,6 @@ class NotificationManager {
 
     for (const day in daysOfWeek) {
       const { status } = await Notifications.requestPermissionsAsync();
-      console.log('Notification Permission Status:', status);
 
       if (daysOfWeek[day]) { // Check if the day is set to true
         try {
@@ -71,12 +69,6 @@ class NotificationManager {
               minute: minute,
               repeats: true,
             },
-          });
-          console.log({
-            weekday: dayNumber,
-            hour: hour,
-            minute: minute,
-            repeats: true
           });
         } catch (error) {
           console.error(`Failed to schedule notification for ${day}:`, error);
