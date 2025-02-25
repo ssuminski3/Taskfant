@@ -127,6 +127,7 @@ const Habit = ({ text, date, streak, done, on, days, last }) => {
         }
     }
     doned()
+    
     return (
         <View style={habitStyles.container}>
             <TouchableOpacity

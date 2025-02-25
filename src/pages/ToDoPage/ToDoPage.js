@@ -8,8 +8,16 @@ import { getTasks, getDoneTasks, getHabits } from '../../storage/storage';
 
 const DropList = ({ on, tab, txt, Com, type = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+
   const toggleList = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const formatTime = (time) => {
+    const d = new Date(time);
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
   return (
@@ -21,22 +29,41 @@ const DropList = ({ on, tab, txt, Com, type = false }) => {
         <View>
           {tab.map((item, index) => {
             if (type) {
-              return <Com key={index} last = {item.lastDate} days={item.days} text={item.text} date={new Date(item.time).getHours()+":"+new Date(item.time).getMinutes()} streak={item.streak} done={item.done} on={on}/>
+              return (
+                <Com
+                  key={index}
+                  last={item.lastDate}
+                  days={item.days}
+                  text={item.text}
+                  date={formatTime(item.time)}  // Proper use here!
+                  streak={item.streak}
+                  done={item.done}
+                  on={on}
+                />
+              );
             }
-            return <Com key={index} text={item.text} date={item.date} on={on}/>
+            return (
+              <Com
+                key={index}
+                text={item.text}
+                date={item.date}
+                on={on}
+              />
+            );
           })}
         </View>
       )}
     </View>
   );
 };
+
 const FloatingButton = ({ onPress }) => {
   const navigation = useNavigation();
 
   return (
     <TouchableOpacity
       style={styles.floatingButton}
-      onPress={() => navigation.navigate('CreateToDoPage', {onGoBack: ()=>{onPress()}})}
+      onPress={() => navigation.navigate('CreateToDoPage', { onGoBack: () => { onPress() } })}
     >
       <Icon name='plus' color={'rgb(10, 10, 10)'} size={20} />
     </TouchableOpacity>
@@ -66,7 +93,7 @@ const ToDoPage = () => {
     }, [])
   );
 
-  
+
   // Rest of your component code
   return (
     <View style={styles.con}>
@@ -91,7 +118,7 @@ const ToDoPage = () => {
           Com={(props) => <DoneTask {...props} />}
         />
       </ScrollView>
-      <FloatingButton onPress={fetchAndReloadTasks}/>
+      <FloatingButton onPress={fetchAndReloadTasks} />
     </View>
   );
 };
