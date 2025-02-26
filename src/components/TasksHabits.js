@@ -113,21 +113,40 @@ const Habit = ({ text, date, streak, done, on, days, last }) => {
         );
     };
     const doned = () => {
-        const currentDay = new Date().getDay();
+        const now = new Date();
+        const todayString = now.toDateString();
 
-        const shouldBeDoneToday = days[Object.keys(days)[currentDay]];
-
-        if(new Date(last).toDateString() != new Date().toDateString()){
-            if(shouldBeDoneToday && done){
-                setUndone(text)
-            }
-            else if(shouldBeDoneToday && !done){
-                resetStreak(text)
-            }
+        // 1) If we've already checked today, do nothing:
+        if (new Date(last).toDateString() === todayString) {
+            return;
         }
-    }
+
+        // 2) Map 0–6 → your weekday keys in the correct order:
+        const scheduleDays = [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+        ];
+        const todayName = scheduleDays[now.getDay()];
+        const shouldBeDoneToday = days[todayName];
+
+        // 3) If today is a scheduled day and you didn't mark it done yesterday, reset the streak:
+        if (shouldBeDoneToday && !done) {
+            resetStreak(text);
+        }
+
+        // 4) If today is a scheduled day (regardless of yesterday’s done state), clear the done flag for the new day:
+        if (shouldBeDoneToday) {
+            setUndone(text);
+        }
+    };
+
     doned()
-    
+
     return (
         <View style={habitStyles.container}>
             <TouchableOpacity
@@ -173,7 +192,6 @@ const TaskHabitsList = ({ tab, Com, date, on, type = false }) => {
         normalized.setHours(0, 0, 0, 0);
         return normalized.getTime();
     };
-    console.log("TAskli, które dostałem: ", tab)
 
     return (
         <View>
@@ -192,7 +210,7 @@ const TaskHabitsList = ({ tab, Com, date, on, type = false }) => {
                                 on={on}
                             />
                         );
-                    } 
+                    }
                     else if (normalizeDate(item.date) === normalizeDate(date)) {
                         return (
                             <Com

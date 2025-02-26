@@ -254,18 +254,52 @@ const getHabits = async () => {
   }
 };
 
-// setDone function
 const setDone = async (text) => {
   try {
-    const existingHabits = await getHabits();
-    const updatedHabits = existingHabits.map(habit =>
-      habit.text === text ? { ...habit, done: !habit.done, lastDate: new Date(), streak: habit.done ? habit.streak - 1 : habit.streak + 1 } : habit
-    );
-    await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updatedHabits));
+    // 1. Load raw JSON and revive dates if you ever need them as Date objects
+    const raw = await AsyncStorage.getItem(habitStorageKey);
+    const habits = raw
+      ? JSON.parse(raw, (key, val) => {
+          if ((key === 'lastDate' || key === 'time') && typeof val === 'string') {
+            return new Date(val);
+          }
+          return val;
+        })
+      : [];
+
+    // 2. Find and toggle
+    let found = false;
+    const now = new Date();
+    const updated = habits.map(habit => {
+      if (habit.text !== text) return habit;
+
+      found = true;
+      const done = !habit.done;
+      const streak = done
+        ? habit.streak + 1
+        : Math.max(0, habit.streak - 1);
+
+      return {
+        ...habit,
+        done,
+        streak,
+        lastDate: now.toISOString(),
+      };
+    });
+
+    // 3. Warn if there was no match
+    if (!found) {
+      console.warn(`setDone: no habit found with text="${text}"`);
+      return;
+    }
+
+    // 4. Persist the change
+    await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updated));
   } catch (error) {
-    console.error('Error updating done status:', error);
+    console.error('setDone error:', error);
   }
-};
+}
+
 
 const setUndone = async (text) => {
 
