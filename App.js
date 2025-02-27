@@ -5,7 +5,7 @@ import CalendarPage from './src/pages/CalendarPage/CalendarPage';
 import StartingPage from './src/pages/StartingPage/StartingPage';
 import ToDoPage from './src/pages/ToDoPage/ToDoPage';
 import ShopPage from './src/pages/ShopPage/ShopPage';
-import SettingsPage from './src/pages/SettingsPage/SettingsPage';
+import ThoughtListPage from './src/pages/ThoughtListPage/ThoughtListPage';
 import CreateToDoPage from './src/pages/ToDoPage/CreateToDoPage';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Choose your icon library
 import { createStackNavigator } from '@react-navigation/stack';
@@ -32,7 +32,7 @@ function MainTabNavigator() {
             case 'Challenges': iconName = 'rocket'; break;
             case 'Home': iconName = 'home'; break;
             case 'Goals': iconName = 'check-square'; break;
-            case 'Settings': iconName = 'cog'; break;
+            case 'Thoughts': iconName = 'comment-o'; break;
             case 'Calendar': iconName = 'calendar'; break;
             default: iconName = 'circle'; break;
           }
@@ -49,7 +49,7 @@ function MainTabNavigator() {
       <Tab.Screen name="Challenges" component={ShopPage} />
       <Tab.Screen name="Home" component={StartingPage} />
       <Tab.Screen name="Goals" component={ToDoPage} />
-      <Tab.Screen name="Settings" component={SettingsPage} />
+      <Tab.Screen name="Thoughts" component={ThoughtListPage} />
     </Tab.Navigator>
   );
 }

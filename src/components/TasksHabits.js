@@ -257,37 +257,42 @@ const Thought = ({ text, date, onDelete, d }) => {
         </View>
     );
 }
-const ThoughtList = ({ thoughts, date, onDelete }) => {
-    const formatTime = (d) => {
-        var date = new Date(d)
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        // Add leading zero if less than 10
-        const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
-        const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
-
-        return `${formattedHours}:${formattedMinutes}`;
+const ThoughtList = ({ thoughts, date, onDelete, all = false }) => {
+    const formatDate = (d) => {
+        const date = new Date(d);
+        if (all) {
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else {
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+            const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
+            const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+            return `${formattedHours}:${formattedMinutes}`;
+        }
     };
 
     return (
         <View>
             <View>
                 {thoughts.map((item, index) => {
-                    if (new Date(date).setHours(0, 0, 0, 0) === new Date(item.date).setHours(0, 0, 0, 0))
+                    if (all || new Date(date).setHours(0, 0, 0, 0) === new Date(item.date).setHours(0, 0, 0, 0)) {
                         return (
                             <Thought
                                 key={index}
                                 onDelete={async (t, d) => onDelete(t, d)}
                                 text={item.text}
-                                date={formatTime(item.date)}
-                                d={date}// Format the time using the helper function
+                                date={formatDate(item.date)}
+                                d={item.date}
                             />
                         );
+                    }
+                    return null; // make sure to return something for all branches
                 })}
             </View>
         </View>
     );
 };
+
 
 
 const styles = StyleSheet.create({
