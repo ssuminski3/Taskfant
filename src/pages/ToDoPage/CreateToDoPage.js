@@ -29,21 +29,22 @@ const CreateToDoPage = ({ route, navigation }) => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const saveToDo = async () => {
+    let id;
     if (title.trim() === '') {
       Alert.alert('Error', 'Please enter a title for the to-do.');
       return;
     }
     if (type === "habit") {
       ('Saving To-Do:', { title, time, days });
-      await createHabit(title, time, days)
-      NotificationManager.scheduleWeeklyNotifications(days, time.getHours(), time.getMinutes());
+      ids = await NotificationManager.scheduleWeeklyNotifications(days, time.getHours(), time.getMinutes());
+      await createHabit(title, time, days, ids)
       navigation.goBack()
     }
     if (type === "task") {
       date.setHours(time.getHours())
       date.setMinutes(time.getMinutes())
-      await createTask(title, date);
-      NotificationManager.scheduleNotificationDateAndHour(date, title);
+      id = await NotificationManager.scheduleNotificationDateAndHour(date, title);
+      await createTask(title, date, id);
       navigation.goBack()
     }
 

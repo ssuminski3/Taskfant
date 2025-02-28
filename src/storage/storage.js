@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import NotificationManager from '../NotificationManager';
 
 const getDays = async () => {
   try {
@@ -111,7 +112,7 @@ const readDay = async (date) => {
   }
 };
 
-const createTask = async (text, date) => {
+const createTask = async (text, date, id) => {
   try {
     // Retrieve existing tasks from AsyncStorage
     let tasks = await getTasks();
@@ -122,7 +123,7 @@ const createTask = async (text, date) => {
     //("Before: ", JSON.stringify(tasks));
 
     // Add new task to the array
-    const newTask = { text: text, date: date };
+    const newTask = { text: text, date: date, id: id };
     tasks.push(newTask);
 
     //("After: ", JSON.stringify(tasks));
@@ -136,17 +137,31 @@ const createTask = async (text, date) => {
 
 const deleteTask = async (text, date) => {
   try {
-    // Retrieve existing tasks from AsyncStorage
-    const tasks = await getTasks()
+    const tasks = await getTasks();
 
-    // Remove the task with matching text and date
-    const updatedTasks = tasks.filter((task) => !(task.text === text && task.date === date));
-    // Save the updated array to AsyncStorage
+    // Find the task to delete
+    const taskToDelete = tasks.find(task => task.text === text && task.date === date);
+
+    // Cancel its notification if ID exists
+    if (taskToDelete?.id) {
+      try {
+        await NotificationManager.cancelNotification(taskToDelete.id);
+        console.log(`Notification ${taskToDelete.id} cancelled.`);
+      } catch (error) {
+        console.error(`Failed to cancel notification ${taskToDelete.id}:`, error);
+      }
+    }
+
+    // Filter out the task and save
+    const updatedTasks = tasks.filter(task => !(task.text === text && task.date === date));
     await AsyncStorage.setItem('tasks', JSON.stringify(updatedTasks));
+
+    console.log(`Task "${text}" on ${date} deleted.`);
   } catch (error) {
     console.error('Error deleting task:', error);
   }
 };
+
 
 const getTasks = async () => {
   try {
@@ -215,7 +230,7 @@ const getDoneTasks = async () => {
 const habitStorageKey = '@HabitTracker:Habits';
 
 // CreateHabit function
-const createHabit = async (text, time, days) => {
+const createHabit = async (text, time, days, ids) => {
   try {
     const existingHabits = await getHabits();
     const newHabit = {
@@ -224,6 +239,7 @@ const createHabit = async (text, time, days) => {
       days,
       streak: 0, // Initial streak value (you can modify this as needed)
       done: false,
+      ids
     };
     const updatedHabits = [...existingHabits, newHabit];
     await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updatedHabits));
@@ -232,16 +248,35 @@ const createHabit = async (text, time, days) => {
   }
 };
 
-// DeleteHabit function
 const deleteHabit = async (text) => {
   try {
     const existingHabits = await getHabits();
+
+    // Find the habit to delete
+    const habitToDelete = existingHabits.find(habit => habit.text === text);
+
+    // Cancel scheduled notifications linked to this habit
+    if (habitToDelete && habitToDelete.ids) {
+      for (const id of habitToDelete.ids) {
+        try {
+          await NotificationManager.cancelNotification(id);
+          console.log(`Notification ${id} cancelled.`);
+        } catch (error) {
+          console.error(`Failed to cancel notification ${id}:`, error);
+        }
+      }
+    }
+
+    // Update habit list and save
     const updatedHabits = existingHabits.filter(habit => habit.text !== text);
     await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updatedHabits));
+
+    console.log(`Habit "${text}" deleted.`);
   } catch (error) {
     console.error('Error deleting habit:', error);
   }
 };
+
 
 // getHabits function
 const getHabits = async () => {
@@ -260,11 +295,11 @@ const setDone = async (text) => {
     const raw = await AsyncStorage.getItem(habitStorageKey);
     const habits = raw
       ? JSON.parse(raw, (key, val) => {
-          if ((key === 'lastDate' || key === 'time') && typeof val === 'string') {
-            return new Date(val);
-          }
-          return val;
-        })
+        if ((key === 'lastDate' || key === 'time') && typeof val === 'string') {
+          return new Date(val);
+        }
+        return val;
+      })
       : [];
 
     // 2. Find and toggle
