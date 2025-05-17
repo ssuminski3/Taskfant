@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import CalendarPage from './src/pages/CalendarPage/CalendarPage';
 import StartingPage from './src/pages/StartingPage/StartingPage';
 import ToDoPage from './src/pages/ToDoPage/ToDoPage';
 import ShopPage from './src/pages/ShopPage/ShopPage';
 import ThoughtListPage from './src/pages/ThoughtListPage/ThoughtListPage';
 import CreateToDoPage from './src/pages/ToDoPage/CreateToDoPage';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Choose your icon library
-import { createStackNavigator } from '@react-navigation/stack';
 import DayPage from './src/pages/DayNotes/Day';
+import Icon from 'react-native-vector-icons/FontAwesome'; // Choose your icon library
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -53,6 +53,7 @@ function MainTabNavigator() {
     </Tab.Navigator>
   );
 }
+
 function MainStackNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -60,21 +61,30 @@ function MainStackNavigator() {
       <Stack.Screen
         name="CreateToDoPage"
         component={CreateToDoPage}
-        options={({ navigation }) => ({
-          title: 'Create To Do', // Set the title of your choice
-        })}
+        options={{
+          title: 'Create To Do',
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: '#000',
+          },
+          headerTintColor: '#fff',
+        }}
       />
       <Stack.Screen
         name="DayPage"
         component={DayPage}
-        options={({ navigation }) => ({
-          title: 'DayPage'
-        })}
+        options={{
+          title: 'Day Notes',
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: '#000',
+          },
+          headerTintColor: '#fff',
+        }}
       />
     </Stack.Navigator>
   );
 }
-
 
 export default function App() {
   return (

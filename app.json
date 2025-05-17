@@ -15,7 +15,7 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
     },
     "android": {
       "adaptiveIcon": {
@@ -24,14 +24,14 @@
       },
       "package": "com.ssuminski3.Taskfant3"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
     "extra": {
       "eas": {
         "projectId": "8bac69a5-8342-4bb1-abbb-50ab2885625f"
       }
     },
-    "owner": "ssuminski3"
+    "owner": "ssuminski3",
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }
