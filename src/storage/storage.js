@@ -54,6 +54,7 @@ const saveWriteDay = async (note, rate, streak, date) => {
       dataArray[existingDayIndex].note = note;
       dataArray[existingDayIndex].rate = rate;
       dataArray[existingDayIndex].streak = streak;
+      dataArray[existingDayIndex].onTime = new Date(date).setHours(0, 0, 0, 0) === new Date(getCurrentDate()).setHours(0, 0, 0, 0)
     } else {
       // Create a new object and add it to the array
       const newDay = {
@@ -69,12 +70,12 @@ const saveWriteDay = async (note, rate, streak, date) => {
     }
     // Save updated array back to AsyncStorage
     await AsyncStorage.setItem('day', JSON.stringify(dataArray));
+    await updateCurrentStreak()
   } catch (error) {
     console.error('Error saving data:', error);
   }
 };
 
-// Helper function to get current date in the format "YYYY-MM-DD"
 const getCurrentDate = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -289,51 +290,103 @@ const getHabits = async () => {
   }
 };
 
+function checkDayAndLastDate(daysOfWeek, lastDate) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize time
+
+  const isTodayInArray = daysOfWeek.includes(today.getDay());
+
+  function getLastMatchingDay(beforeDate, daysArray) {
+    if (!Array.isArray(daysArray) || daysArray.length === 0) return null;
+
+    const date = new Date(beforeDate);
+    date.setDate(date.getDate() - 1); // Start from day before
+    date.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < 7; i++) { // Avoid infinite loop
+      if (daysArray.includes(date.getDay())) {
+        return date;
+      }
+      date.setDate(date.getDate() - 1);
+    }
+
+    return null;
+  }
+
+
+  const lastMatchingDay = getLastMatchingDay(today, daysOfWeek);
+
+  // Normalize lastDate input
+  const inputLastDate = new Date(lastDate);
+  inputLastDate.setHours(0, 0, 0, 0);
+
+  const isLastDateCorrect = inputLastDate.getTime() === lastMatchingDay.getTime();
+
+  return {
+    isTodayInArray,
+    isLastDateCorrect,
+    lastMatchingDay
+  };
+}
 const setDone = async (text) => {
   try {
-    // 1. Load raw JSON and revive dates if you ever need them as Date objects
     const raw = await AsyncStorage.getItem(habitStorageKey);
-    const habits = raw
-      ? JSON.parse(raw, (key, val) => {
-        if ((key === 'lastDate' || key === 'time') && typeof val === 'string') {
-          return new Date(val);
-        }
-        return val;
-      })
-      : [];
+    const habits = raw ? JSON.parse(raw) : [];
 
-    // 2. Find and toggle
     let found = false;
-    const now = new Date();
     const updated = habits.map(habit => {
       if (habit.text !== text) return habit;
 
       found = true;
-      const done = !habit.done;
-      const streak = done
-        ? habit.streak + 1
-        : Math.max(0, habit.streak - 1);
+
+      const wasDone = habit.done;
+      const lastDate = habit.lastDate ? new Date(habit.lastDate) : null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      console.log(`--- SETDONE: running for '${habit.text}'`);
+      console.log('today:', today.toISOString());
+      console.log('lastDate:', habit.lastDate);
+      console.log('days:', habit.days);
+      console.log('wasDone:', wasDone);
+
+
+      const result = checkDayAndLastDate(habit.days, lastDate);
+      const isNowDone = !wasDone;
+      console.log('checkDayAndLastDate result:', result);
+
+      let streak = habit.streak;
+
+      if (isNowDone) {
+        if (result.isLastDateCorrect) {
+          streak += 1;
+          console.log(result)
+        } else {
+          console.log(result)
+          streak = 1;
+        }
+      } else {
+        streak = Math.max(0, streak - 1);
+      }
 
       return {
         ...habit,
-        done,
+        done: isNowDone,
         streak,
-        lastDate: now.toISOString(),
+        lastDate: result.isTodayInArray ? today.toISOString() : habit.lastDate,
       };
     });
 
-    // 3. Warn if there was no match
     if (!found) {
       console.warn(`setDone: no habit found with text="${text}"`);
       return;
     }
 
-    // 4. Persist the change
     await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updated));
   } catch (error) {
     console.error('setDone error:', error);
   }
-}
+};
 
 
 const setUndone = async (text) => {
@@ -341,20 +394,7 @@ const setUndone = async (text) => {
   try {
     const existingHabits = await getHabits();
     const updatedHabits = existingHabits.map(habit =>
-      habit.text === text ? { ...habit, done: false } : habit
-    );
-    await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updatedHabits));
-  } catch (error) {
-    console.error('Error updating done status:', error);
-  }
-}
-
-const resetStreak = async (text) => {
-
-  try {
-    const existingHabits = await getHabits();
-    const updatedHabits = existingHabits.map(habit =>
-      habit.text === text ? { ...habit, streak: 0, done: false } : habit
+      habit.text === text ? { ...habit, done: false, streak: habit.streak - 1 } : habit
     );
     await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updatedHabits));
   } catch (error) {
@@ -418,25 +458,46 @@ const getThought = async () => {
 
 const STORAGE_KEY = 'user';
 
-const setUserStreak = async (action) => {
-  try {
-    // Retrieve the existing data from storage
-    const existingData = await getStoredData()
-    let data = existingData ? existingData : { streak: 0, lastDate: null };
+const isSameDay = (d1, d2) =>
+  d1 && d2 &&
+  new Date(d1).getFullYear() === new Date(d2).getFullYear() &&
+  new Date(d1).getMonth() === new Date(d2).getMonth() &&
+  new Date(d1).getDate() === new Date(d2).getDate();
 
-    // Update streak based on the action
-    if (action === 0) {
-      data.streak = 0;
-    } else if (action === 1) {
-      data.streak += 1;
-      data.lastDate = new Date();
-    }
-    // Save the updated data back to storage
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+const newDay = async () => {
+  try {
+    const existingHabits = await getHabits();
+    const today = new Date().getDay();
+
+    const updatedHabits = existingHabits.map(habit => ({
+      ...habit,
+      done: habit.days.includes(today) ? false : habit.done,
+    }));
+
+    await AsyncStorage.setItem(habitStorageKey, JSON.stringify(updatedHabits));
   } catch (error) {
-    console.error('Error setting streak:', error);
+    console.error('Error updating done status:', error);
+  }
+
+  try {
+    const storedRaw = await AsyncStorage.getItem(STORAGE_KEY);
+    const storedData = storedRaw ? JSON.parse(storedRaw) : { streak: 0, lastDate: null };
+
+    const result = checkDayAndLastDate([0, 1, 2, 3, 4, 5, 6], storedData.lastDate);
+    const today = new Date();
+
+    if (!result.isLastDateCorrect && !isSameDay(result.lastMatchingDay, today)) {
+      await AsyncStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ streak: 0, lastDate: storedData.lastDate })
+      );
+    }
+  } catch (error) {
+    console.error('Error setting stored data:', error);
   }
 };
+
 
 const getStoredData = async () => {
   try {
@@ -446,9 +507,32 @@ const getStoredData = async () => {
     console.error('Error getting stored data:', error);
   }
 };
+
+const updateCurrentStreak = async () => {
+  try {
+    const storedRaw = await AsyncStorage.getItem(STORAGE_KEY);
+    const storedData = storedRaw ? JSON.parse(storedRaw) : { streak: 0, lastDate: null };
+
+    const result = checkDayAndLastDate([0, 1, 2, 3, 4, 5, 6], storedData.lastDate);
+
+    if (result.isLastDateCorrect) {
+      await AsyncStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          streak: storedData.streak + 1,
+          lastDate: new Date().toISOString(),
+        })
+      );
+    }
+  } catch (error) {
+    console.error('Error updating streak:', error);
+  }
+};
+
+
 export {
   savePlanDay, saveWriteDay, readPlanDay, readDay, getDays,
-  createTask, deleteTask, getTasks, createDoneTask, deleteDoneTask, getDoneTasks, createHabit, deleteHabit, getHabits, setDone, setUndone, resetStreak,
+  createTask, deleteTask, getTasks, createDoneTask, deleteDoneTask, getDoneTasks, createHabit, deleteHabit, getHabits, setDone, setUndone,
   createThought, deleteThought, getThought,
-  setUserStreak, getStoredData
+  newDay, getStoredData, getCurrentDate, updateCurrentStreak
 }

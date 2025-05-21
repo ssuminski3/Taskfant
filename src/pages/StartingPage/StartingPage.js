@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ImageBackground, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Choose your icon library
 import { ThoughtList } from '../../components/TasksHabits';
-import { createThought, deleteThought, getThought, getStoredData, setUserStreak, saveWriteDay, getHabits, setStreak } from '../../storage/storage';
+import { createThought, deleteThought, getThought, saveWriteDay, newDay, getStoredData } from '../../storage/storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -26,55 +26,42 @@ const AddThoughtComponent = ({ onAddThought }) => {
 };
 
 const StartingPage = () => {
-  const [streak, setStreak] = useState(7); // Replace 0 with your starting value for n
   const navigation = useNavigation()
 
   const [thought, setThought] = useState([]);
 
-  const isTodayOrYesterday = (timestamp) => {
-    const storedDate = new Date(timestamp).toDateString();
-    const currentDate = new Date().toDateString();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
+  const [streak, setStreak] = useState(0)
 
-    return storedDate === currentDate || storedDate === yesterday.toDateString();
-  };
+  useEffect(() => {
+    const init = async () => {
+      await newDay();
+      const data = await getStoredData();
+      setStreak(data.streak);
+    };
+    init();
+  }, []);
 
-  const ZeroStreak = async () => {
-    const data = await getStoredData()
-    const storedTimestamp = data.lastDate;
 
-    if (!isTodayOrYesterday(storedTimestamp)) {
-      // User missed a day, reset streak to 0
-      setStreak(0);
-      setUserStreak(0)
-    } 
-    else{
-    }
-    setStreak(data.streak)
-  } 
-
-  const fetchAndReloadTasks = async () => {
+  const fetchAndReloadThoughts = async () => {
     try {
-      const t = await getThought()
-      await ZeroStreak()
-      setThought(t || '')
+      const t = await getThought();
+      setThought(Array.isArray(t) ? t : []);
     } catch (error) {
       console.error('Error fetching tasks:', error);
     }
   };
   useFocusEffect(
     React.useCallback(() => {
-      fetchAndReloadTasks();
+      fetchAndReloadThoughts();
     }, [])
   );
   const AddThought = async (thought) => {
     await createThought(thought, new Date())
-    fetchAndReloadTasks()
+    fetchAndReloadThoughtss()
   }
   const onThoughtDelete = async (text, date) => {
     await deleteThought(text, date);
-    fetchAndReloadTasks();
+    fetchAndReloadThoughtss();
   }
   const handleWrite = async (note, rate, streak, date) => {
     try {
@@ -100,7 +87,8 @@ const StartingPage = () => {
         <ImageBackground
           source={require('../../../assets/fire.png')}
           style={styles.backgroundImage}
-          resizeMode="cover" // or "contain" based on your need
+          resizeMode="cover"
+          testID='streak-fire-image'
         >
           <Text style={styles.overlayText}>{streak}</Text>
         </ImageBackground>

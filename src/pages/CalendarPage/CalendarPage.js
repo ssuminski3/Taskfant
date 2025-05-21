@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -9,10 +9,14 @@ const CalendarPage = () => {
   const [dates, setDates] = useState([]);
 
   const fetchDates = async () => {
-    const fetchedDates = await getDays();
-    setDates(fetchedDates);
+    try {
+      const fetchedDates = await getDays();
+      setDates(fetchedDates);
+    } catch (error) {
+      console.error("Error fetching dates:", error);
+    }
   };
-  // Fetch dates when the component is focused
+
   useFocusEffect(
     React.useCallback(() => {
       fetchDates();
@@ -22,7 +26,6 @@ const CalendarPage = () => {
   const handleSave = async (plan, selectedDate) => {
     try {
       await savePlanDay(plan, selectedDate);
-      // Fetch and update dates immediately after saving the plan
       fetchDates();
     } catch (error) {
       console.error('Error saving plan:', error);
@@ -32,38 +35,42 @@ const CalendarPage = () => {
   const handleWrite = async (note, rate, streak, date) => {
     try {
       await saveWriteDay(note, rate, streak, date);
-      // Fetch and update dates immediately after saving the plan
       fetchDates();
     } catch (error) {
-      console.error('Error saving plan:', error);
+      console.error('Error saving note:', error);
     }
   };
 
   const currentDate = new Date();
-  const dateData = dates.filter((date) => {
-    
-    const dateObject = new Date(date.date);
-    dateObject.setDate(dateObject.getDate() + 1)
-    const isBeforeToday = dateObject.setHours(0, 0, 0, 0) < currentDate;
-    const isToday = dateObject.setHours(0, 0, 0, 0) === currentDate;
-    const hasNote = date.note ? true : false
+  currentDate.setHours(0, 0, 0, 0); // Normalize currentDate for comparisons
 
-    return isBeforeToday && !isToday && hasNote;
+  // Filter dates that have notes and are before today (excluding today)
+  const dateData = dates.filter(({ date, note }) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d < currentDate && note;
   });
-  const planData = dates.filter((date) => {
-    
-    const dateObject = new Date(date.date);
-    dateObject.setDate(dateObject.getDate())
-    const isBeforeToday = dateObject.setHours(0, 0, 0, 0) < currentDate;
-    const isToday = dateObject.setHours(0, 0, 0, 0) === currentDate;
 
-    return !isBeforeToday && !isToday;
+  // Filter dates for planData that are today or in the future
+  const planData = dates.filter(({ date }) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d >= currentDate;
   });
+
   const onDayPress = (day) => {
-    navigation.navigate("DayPage", {date: day.dateString, onSave: handleWrite, onSave2: handleSave})
-  }
-  const markedDates = dateData.reduce((acc, dat) => {
-    acc[dat.date] = {
+    navigation.navigate('DayPage', {
+      date: day.dateString,
+      onSave: handleWrite,
+      onSave2: handleSave,
+    });
+  };
+
+  // Build markedDates object for Calendar marking
+  const markedDates = {};
+
+  dateData.forEach((dat) => {
+    markedDates[dat.date] = {
       customStyles: {
         container: {
           backgroundColor: dat.onTime ? 'rgb(255, 235, 59)' : 'rgb(10, 10, 10)',
@@ -77,8 +84,7 @@ const CalendarPage = () => {
         },
       },
     };
-    return acc;
-  }, {});
+  });
 
   planData.forEach((date) => {
     if (!markedDates[date.date]) {
@@ -101,9 +107,8 @@ const CalendarPage = () => {
   return (
     <View style={styles.container}>
       <Calendar
-        // The current marked dates from the state
         markedDates={markedDates}
-        markingType={'custom'}
+        markingType="custom"
         onDayPress={onDayPress}
         style={styles.calendar}
         theme={{

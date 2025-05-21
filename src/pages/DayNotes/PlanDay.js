@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
 import { TaskHabitsList } from '../../components/TasksHabits'
 import Icon from 'react-native-vector-icons/FontAwesome'; // Choose your icon library
 import { Task, Habit } from '../../components/TasksHabits';
-import { savePlanDay, readPlanDay, getHabits, getTasks, createTask, getDays } from '../../storage/storage';
+import { readPlanDay, getHabits, getTasks, createTask } from '../../storage/storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 const AddTaskComponent = ({ onAddTask, }) => {
@@ -18,7 +18,7 @@ const AddTaskComponent = ({ onAddTask, }) => {
                 onChangeText={setTask}
                 placeholderTextColor="#a0a0a0"
             />
-            <TouchableOpacity style={styles.addButtonAdd} onPress={() => {onAddTask(task); setTask('')}}>
+            <TouchableOpacity style={styles.addButtonAdd} onPress={() => {onAddTask(task); setTask('')}} testID='button'>
                 <Icon name='plus' color={'rgb(255, 235, 59)'} size={20} />
             </TouchableOpacity>
         </View>

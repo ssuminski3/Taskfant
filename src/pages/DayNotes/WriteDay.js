@@ -34,7 +34,7 @@ const NumberSelector = ({ rate, setRate }) => {
   return (
     <View>
       <View style={{ alignItems: 'center' }}>
-        <Text style={{ color: interpolateColor(selectedNumber), fontSize: 40 }}>
+        <Text testID='selected-rate' style={{ color: interpolateColor(selectedNumber), fontSize: 40 }}>
           {selectedNumber == null ? "Rate your day" : selectedNumber}
         </Text>
       </View>
@@ -68,14 +68,19 @@ const WriteDay = ({ date, onSave }) => {
     const ha = await getHabits();
 
     setRat(da.rate ?? null);
-    setNote(prev => hasInitializedNote.current ? prev : (da.note ?? ''));
-    if (da.note) hasInitializedNote.current = true;
+
+    // Fix: Set note only if it hasn't been set yet
+    if (!hasInitializedNote.current && (da.note ?? '').trim() !== '') {
+      setNote(da.note);
+      hasInitializedNote.current = true;
+    }
 
     setDoneTasks(don);
     setDay(da);
     setTasks(ta);
     setHabits(ha);
   };
+
 
   useEffect(() => {
     fetchPlan();
@@ -96,7 +101,7 @@ const WriteDay = ({ date, onSave }) => {
         onSave(note, rat, 3, date);
         // update streak only once per day when a note exists
         if (!hasInitializedNote.current && note.trim() !== '' &&
-            new Date(date).toDateString() === new Date().toDateString()) {
+          new Date(date).toDateString() === new Date().toDateString()) {
           setUserStreak(1);
         }
       }
@@ -120,6 +125,7 @@ const WriteDay = ({ date, onSave }) => {
           multiline
           onChangeText={setNote}
           placeholderTextColor="#a0a0a0"
+          testID="note-input"
         />
 
         <NumberSelector rate={rat} setRate={setRat} />
