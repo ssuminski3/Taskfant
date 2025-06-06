@@ -57,11 +57,11 @@ const StartingPage = () => {
   );
   const AddThought = async (thought) => {
     await createThought(thought, new Date())
-    fetchAndReloadThoughtss()
+    fetchAndReloadThoughts()
   }
   const onThoughtDelete = async (text, date) => {
     await deleteThought(text, date);
-    fetchAndReloadThoughtss();
+    fetchAndReloadThoughts();
   }
   const handleWrite = async (note, rate, streak, date) => {
     try {

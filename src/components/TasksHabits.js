@@ -109,7 +109,7 @@ const Habit = ({ text, date, streak, done, on, days, last }) => {
       [
         {
           text: "No",
-          onPress: () => {},
+          onPress: () => { },
           style: "cancel"
         },
         {
@@ -187,6 +187,55 @@ const formatDate = (inputDate) => {
   return `${year}-${month}-${day}`;
 };
 
+const Thought = ({ text, date, onDelete, d }) => {
+  return (
+    <View style={styles.container}>
+      <View style={styles.textAndDateContainer}>
+        <Text style={styles.text}>{text}</Text>
+        <Text style={styles.date}>{date}</Text>
+      </View>
+      <TouchableOpacity style={styles.deleteButton} onPress={async () => onDelete(text, d)}>
+        <MaterialIcons name="delete" size={24} color="red" />
+      </TouchableOpacity>
+    </View>
+  );
+}
+const ThoughtList = ({ thoughts, date, onDelete, all = false }) => {
+  const formatDate = (d) => {
+    const date = new Date(d);
+    if (all) {
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
+      const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+      return `${formattedHours}:${formattedMinutes}`;
+    }
+  };
+
+  return (
+    <View>
+      <View>
+        {thoughts.map((item, index) => {
+          if (all || new Date(date).setHours(0, 0, 0, 0) === new Date(item.date).setHours(0, 0, 0, 0)) {
+            return (
+              <Thought
+                key={index}
+                onDelete={async (t, d) => onDelete(t, d)}
+                text={item.text}
+                date={formatDate(item.date)}
+                d={item.date}
+              />
+            );
+          }
+          return null; // make sure to return something for all branches
+        })}
+      </View>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   taskContainer: {
     flexDirection: "row",
@@ -229,15 +278,25 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   text: {
+    color: 'white',
     fontSize: 16,
+    fontWeight: 'bold',
+    flex: 1,
   },
   date: {
-    fontSize: 12,
-    color: "gray",
+    color: '#999',
   },
   deleteButton: {
-    padding: 5,
+    padding: 10,
   },
+
+  textAndDateContainer: {
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    flex: 1,
+    marginLeft: 10,
+  },
+
 });
 
 const doneTaskStyles = StyleSheet.create({
@@ -315,4 +374,72 @@ const habitStyles = StyleSheet.create({
   },
 });
 
-export { Task, DoneTask, Habit };
+const DoneTaskHabits = ({ tab, Com, on, date, type = false }) => {
+
+  return (
+    <View>
+      <View>
+        {tab.map((item, index) => {
+
+          if (new Date(date).setHours(0, 0, 0, 0) == new Date(item.date).setHours(0, 0, 0, 0))
+            return <Com key={index} text={item.text} date={item.date} on={on} />
+        })}
+      </View>
+    </View>
+  );
+}
+
+const TaskHabitsList = ({ tab, Com, date, on, type = false }) => {
+
+  const getDayName = (dayIndex) => {
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return daysOfWeek[dayIndex];
+  };
+
+  const checkIfDayMatches = (item, date) => {
+    const dayIndex = new Date(date).getDay();
+    return item.days[getDayName(dayIndex)] === true;
+  };
+
+  const normalizeDate = (d) => {
+    const normalized = new Date(d);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized.getTime();
+  };
+
+  return (
+    <View>
+      <View>
+        {tab.map((item, index) => {
+          if (type && checkIfDayMatches(item, date)) {
+            return (
+              <Com
+                key={index}
+                text={item.text}
+                date={"For Today"}
+                streak={item.streak}
+                done={item.done}
+                days={item.days}
+                last={item.lastDate}
+                on={on}
+              />
+            );
+          }
+          else if (normalizeDate(item.date) === normalizeDate(date)) {
+            return (
+              <Com
+                key={index}
+                text={item.text}
+                date={item.date}
+                on={on}
+              />
+            );
+          }
+          return null; // Explicitly return null for unmatched items
+        })}
+      </View>
+    </View>
+  );
+};
+
+export { TaskHabitsList, DoneTaskHabits, ThoughtList, Task, DoneTask, Habit }

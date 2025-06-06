@@ -91,6 +91,7 @@ export default function DayPage({ route }) {
         for (let i = 1; i <= 7; i++) {
           updatedDates.push(addDaysToDate(dat[dat.length - 1], i));
         }
+        updatedDates.shift()
         setDat(updatedDates);
         setCurrentIndex(index);
       }
@@ -101,6 +102,7 @@ export default function DayPage({ route }) {
           updatedDates.push(addDaysToDate(dat[0], -i));
         }
         updatedDates.push(...dat);
+        updatedDates.pop();
         setDat(updatedDates);
         setCurrentIndex(index+7); // Adjust the current index accordingly
       }
